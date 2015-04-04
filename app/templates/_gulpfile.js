@@ -55,14 +55,17 @@ gulp.task('scripts', function () {
         fullPaths: true
     }));
 
-    bundler.on('update', rebundle);
+    bundler.on('update', function() {
+        rebundle(bundler)
+    });
 
-    function rebundle() {
-        return bundler.bundle()
+    function rebundle(b) {
+        b.bundle()
             // log errors if they happen
             .on('error', $.util.log.bind($.util, 'Browserify Error'))
             .pipe(source(destFileName))
-            .pipe(gulp.dest(destFolder));
+            .pipe(gulp.dest(destFolder))
+            .on('end', function () { reload(); });
     }
 
     return rebundle();
@@ -161,8 +164,6 @@ gulp.task('watch', ['html', 'bundle'], function () {
         // https: true,
         server: ['dist', 'app']
     });
-
-    gulp.watch('app/scripts/**/*.js', ['scripts', reload]);
 
     // Watch .json files
     gulp.watch('app/scripts/**/*.json', ['json']);
